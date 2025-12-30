@@ -467,6 +467,52 @@
             transform: scale(1.2);
         }
 
+        /* Modal gallery arrows */
+        .modal-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.6);
+            color: #fff;
+            border: none;
+            font-size: 28px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            z-index: 100000;
+            transition: background 0.2s, transform 0.15s;
+        }
+
+        .modal-arrow:hover { background: rgba(0,0,0,0.85); transform: translateY(-50%) scale(1.05); }
+
+        .modal-arrow.prev { left: 30px; }
+        .modal-arrow.next { right: 30px; }
+
+        .modal-inner { max-width: 90%; max-height: 90%; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        .modal-counter { color:#ccc; margin-top:8px; font-size:14px; }
+
+        /* Grouped thumbnails styling */
+        .group-thumbs { display:flex; gap:12px; padding:12px; align-items:center; justify-content:center; }
+        .group-thumbs .thumb {
+            width: calc((100% - 24px) / 3);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.28s cubic-bezier(.2,.9,.2,1), box-shadow 0.28s, border-color 0.28s;
+            border: 2px solid rgba(255,255,255,0.04);
+            object-fit: cover;
+        }
+
+        .group-thumbs .thumb:hover {
+            transform: translateY(-8px) scale(1.04);
+            box-shadow: 0 18px 40px rgba(0,0,0,0.6), 0 0 40px rgba(74,144,226,0.12);
+            border-color: rgba(74,144,226,0.6);
+        }
+
+        @media (max-width: 680px) {
+            .group-thumbs { gap:8px; }
+            .group-thumbs .thumb { width: calc((100% - 16px) / 3); }
+        }
+
         .screenshot-caption {
             text-align: center;
             padding: 10px;
@@ -919,8 +965,6 @@
                         <div class="player-item"><a href="https://steamcommunity.com/profiles/76561199886082986" target="_blank">🇩🇴 FurY Fox - STEAM_0:0:962908629s</a></div>
 
                     </div>
-                    "
-
 
                     <h3 style="margin-top: 40px;">Inactivos (4)</h3>
                     <div class="players-list">
@@ -939,10 +983,15 @@
                     <p>Torneos, VS, ETC</p>
                 </div>
 
-                <!-- Modal para ampliar imágenes -->
-                <div id="imageModal" class="image-modal" onclick="closeModal()">
-                    <span class="close-modal">&times;</span>
-                    <img class="modal-content" id="modalImage">
+                <!-- Modal para ampliar imágenes (gallery with navigation) -->
+                <div id="imageModal" class="image-modal" onclick="closeModal(event)">
+                    <span class="close-modal" onclick="closeModal(event)">&times;</span>
+                    <button class="modal-arrow prev" id="modalPrev" aria-label="Anterior" onclick="prevImage(event)">◀</button>
+                    <div class="modal-inner" onclick="event.stopPropagation()">
+                        <img class="modal-content" id="modalImage">
+                        <div class="modal-counter" id="modalCounter"></div>
+                    </div>
+                    <button class="modal-arrow next" id="modalNext" aria-label="Siguiente" onclick="nextImage(event)">▶</button>
                 </div>
 
                 <!-- Mundial 1v1 OGHL -->
@@ -1001,16 +1050,12 @@
                     <h3 class="album-title" onclick="toggleAlbum(this)">🌍 FURY TEAM & INTERNACIONAL</h3>
                     <div class="album-grid">
                         <div class="screenshot-item">
-                            <img src="images/2022EE1.JPG" alt="FurY Team" onclick="openModal(this.src)">
-                            <div class="screenshot-caption">FurY Team</div>
-                        </div>
-                        <div class="screenshot-item">
-                            <img src="images/2080E01.JPG" alt="FurY Team" onclick="openModal(this.src)">
-                            <div class="screenshot-caption">FurY Team</div>
-                        </div>
-                        <div class="screenshot-item">
-                            <img src="images/20A3E71.JPG" alt="FurY Team" onclick="openModal(this.src)">
-                            <div class="screenshot-caption">FurY Team</div>
+                            <div class="group-thumbs">
+                                <img class="thumb" src="images/2022EE1.JPG" alt="FurY Team 1" onclick="openModal(this)">
+                                <img class="thumb" src="images/2080E01.JPG" alt="FurY Team 2" onclick="openModal(this)">
+                                <img class="thumb" src="images/20A3E71.JPG" alt="FurY Team 3" onclick="openModal(this)">
+                            </div>
+                            <div class="screenshot-caption">FurY Team (grupo)</div>
                         </div>
                         <div class="screenshot-item">
                             <img src="images/2073171.JPG" alt="Amistoso contra Rusia" onclick="openModal(this.src)">
@@ -1215,23 +1260,83 @@
             setTimeout(typeMessage, 500);
         });
 
-        // Funciones para ampliar imágenes
-        function openModal(imageSrc) {
+        // Funciones para ampliar imágenes (gallery support)
+        let galleryImages = [];
+        let currentIndex = 0;
+
+        function openModal(imageOrElement) {
             const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
+            const counter = document.getElementById('modalCounter');
+            let clicked = null;
+
+            if (typeof imageOrElement === 'string') {
+                clicked = Array.from(document.querySelectorAll('.screenshot-item img')).find(img => {
+                    const srcAttr = img.getAttribute('src') || '';
+                    return srcAttr === imageOrElement || img.src.endsWith(imageOrElement);
+                });
+            } else if (imageOrElement instanceof Element) {
+                clicked = imageOrElement;
+            }
+
+            if (clicked) {
+                const parent = clicked.closest('.screenshot-item');
+                galleryImages = Array.from(parent.querySelectorAll('img')).map(i => i.getAttribute('src') || i.src);
+                currentIndex = galleryImages.findIndex(s => s === (clicked.getAttribute('src') || clicked.src));
+                if (currentIndex < 0) currentIndex = 0;
+            } else {
+                galleryImages = [typeof imageOrElement === 'string' ? imageOrElement : ''];
+                currentIndex = 0;
+            }
+
             modal.classList.add('active');
-            modalImg.src = imageSrc;
+            showImage(currentIndex);
         }
 
-        function closeModal() {
+        function showImage(index) {
+            const modalImg = document.getElementById('modalImage');
+            const counter = document.getElementById('modalCounter');
+            const prev = document.getElementById('modalPrev');
+            const next = document.getElementById('modalNext');
+
+            if (!galleryImages || galleryImages.length === 0) return;
+            currentIndex = (index + galleryImages.length) % galleryImages.length;
+            modalImg.src = galleryImages[currentIndex];
+            counter.textContent = (currentIndex + 1) + ' / ' + galleryImages.length;
+
+            if (galleryImages.length <= 1) {
+                prev.style.display = 'none';
+                next.style.display = 'none';
+            } else {
+                prev.style.display = 'block';
+                next.style.display = 'block';
+            }
+        }
+
+        function nextImage(e) { if (e) e.stopPropagation(); showImage(currentIndex + 1); }
+        function prevImage(e) { if (e) e.stopPropagation(); showImage(currentIndex - 1); }
+
+        function closeModal(e) {
+            if (e && e.type === 'click') {
+                // ignore clicks inside modal content
+                if (e.target.closest('.modal-inner')) return;
+            }
             const modal = document.getElementById('imageModal');
             modal.classList.remove('active');
         }
 
-        // Cerrar modal con tecla ESC
+        // Teclas de navegación: ESC para cerrar, flechas para navegar
         document.addEventListener('keydown', function (e) {
+            const modal = document.getElementById('imageModal');
+            if (!modal) return;
+            const isActive = modal.classList.contains('active');
+
             if (e.key === 'Escape') {
-                closeModal();
+                if (isActive) closeModal(e);
+            }
+
+            if (isActive) {
+                if (e.key === 'ArrowRight') nextImage();
+                if (e.key === 'ArrowLeft') prevImage();
             }
         });
 
