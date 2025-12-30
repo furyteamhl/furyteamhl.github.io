@@ -19,9 +19,9 @@
             display: block;
         }
 
-        /* Prevent page horizontal overflow (safe default) */
+        /* Allow natural horizontal flow; avoid hiding overflow that masks layout issues */
         html, body {
-            overflow-x: hidden;
+            overflow-x: visible;
         }
 
         /* Ensure long links/words wrap on small screens */
@@ -699,6 +699,62 @@
 
         .screenshot-item:hover img {
             transform: scale(1.05);
+        }
+
+        /* Improve centering and responsive behavior for screenshot items and thumbnail groups */
+        .album-grid {
+            justify-items: center;
+            align-items: start;
+            box-sizing: border-box;
+        }
+
+        .screenshot-item {
+            margin: 0 auto;
+            box-sizing: border-box;
+            width: 100%;
+            max-width: 720px;
+        }
+
+        /* Thumbnail group: use flexible boxes so thumbs scale and wrap */
+        .group-thumbs {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            box-sizing: border-box;
+        }
+
+        .group-thumbs .thumb {
+            flex: 1 1 calc(33.333% - 8px);
+            max-width: calc(33.333% - 8px);
+            min-width: 80px;
+            height: auto;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.28s cubic-bezier(.2,.9,.2,1), box-shadow 0.28s, border-color 0.28s;
+            border: 2px solid rgba(255,255,255,0.04);
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Tighter layouts on small screens */
+        @media (max-width: 680px) {
+            .screenshot-item { max-width: 100%; }
+            .group-thumbs .thumb { flex: 1 1 calc(33.333% - 6px); max-width: calc(33.333% - 6px); }
+            /* Use a single-column album layout on narrow screens to avoid overflow */
+            .album-grid, .screenshots-grid { grid-template-columns: 1fr; padding: 18px; }
+            .album-grid .screenshot-item, .screenshots-grid .screenshot-item { max-width: 100%; }
+        }
+
+        @media (max-width: 420px) {
+            .group-thumbs .thumb { flex: 1 1 48%; max-width: 48%; }
+            .group-thumbs { gap: 8px; }
+            .screenshot-caption { font-size: 13px; }
+            /* Hide heavy header decorations on very small screens */
+            header h1::before, header h1::after { display: none; }
+            .content { padding: 20px; }
         }
 
         /* Botón de música flotante */
