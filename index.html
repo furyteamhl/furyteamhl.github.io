@@ -12,6 +12,24 @@
             box-sizing: border-box;
         }
 
+        /* Make media elements responsive and prevent horizontal scroll */
+        img, picture, video, iframe {
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Prevent page horizontal overflow (safe default) */
+        html, body {
+            overflow-x: hidden;
+        }
+
+        /* Ensure long links/words wrap on small screens */
+        .player-item a, .sidebar-item, .section {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
         /* Pantalla de hackeo */
         #hack-screen {
             position: fixed;
@@ -167,7 +185,7 @@
         header h1::before {
             content: '';
             position: absolute;
-            left: -100px;
+            left: -60px;
             top: 50%;
             transform: translateY(-50%) rotate(-25deg);
             width: 80px;
@@ -181,7 +199,7 @@
         header h1::after {
             content: '';
             position: absolute;
-            right: -100px;
+            right: -60px;
             top: 50%;
             transform: translateY(-50%) rotate(25deg) scaleX(-1);
             width: 80px;
