@@ -499,7 +499,7 @@
         /* Grouped thumbnails styling */
         .group-thumbs { display:flex; gap:12px; padding:12px; align-items:center; justify-content:center; }
         .group-thumbs .thumb {
-            width: calc((100% - 24px) / 3);
+            width: calc((100% - 24px) / 2);
             border-radius: 10px;
             cursor: pointer;
             transition: transform 0.28s cubic-bezier(.2,.9,.2,1), box-shadow 0.28s, border-color 0.28s;
@@ -515,7 +515,7 @@
 
         @media (max-width: 680px) {
             .group-thumbs { gap:8px; }
-            .group-thumbs .thumb { width: calc((100% - 16px) / 3); }
+            .group-thumbs .thumb { width: calc((100% - 16px) / 2); }
         }
 
         .screenshot-caption {
@@ -732,8 +732,8 @@
         }
 
         .group-thumbs .thumb {
-            flex: 1 1 calc(33.333% - 8px);
-            max-width: calc(33.333% - 8px);
+            flex: 1 1 calc(50% - 8px);
+            max-width: calc(50% - 8px);
             min-width: 80px;
             height: auto;
             border-radius: 10px;
@@ -747,7 +747,7 @@
         /* Tighter layouts on small screens */
         @media (max-width: 680px) {
             .screenshot-item { max-width: 100%; }
-            .group-thumbs .thumb { flex: 1 1 calc(33.333% - 6px); max-width: calc(33.333% - 6px); }
+            .group-thumbs .thumb { flex: 1 1 calc(50% - 6px); max-width: calc(50% - 6px); }
             /* Use a single-column album layout on narrow screens to avoid overflow */
             .album-grid, .screenshots-grid { grid-template-columns: 1fr; padding: 18px; }
             .album-grid .screenshot-item, .screenshots-grid .screenshot-item { max-width: 100%; }
