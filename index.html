@@ -21,7 +21,7 @@
 
         /* Allow natural horizontal flow; avoid hiding overflow that masks layout issues */
         html, body {
-            overflow-x: visible;
+            overflow-x: hidden;
         }
 
         /* Ensure long links/words wrap on small screens */
@@ -756,6 +756,14 @@
             header h1::before, header h1::after { display: none; }
             .content { padding: 20px; }
         }
+
+        /* Remove backdrop-filter and reduce shadow intensity globally for faster paint */
+        header, .album-section, .screenshot-item, .info-card, .players-list, .logo-container, .background::before {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.25) !important;
+        }
+
 
         /* Botón de música flotante */
         .music-control {
